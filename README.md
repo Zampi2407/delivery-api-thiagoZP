@@ -37,7 +37,7 @@ git clone https://github.com/Zampi2407/delivery-api-thiagoZP.git
 cd delivery-api-thiagoZP
 
 
-**Executar a aplicação:**
+### Executar a aplicação:
 
 ./mvnw spring-boot:run
 
@@ -49,7 +49,7 @@ http://localhost:8080/health
 http://localhost:8080/info
 http://localhost:8080/h2-console
 
-**Endpoints Disponíveis**
+### Endpoints Disponíveis
 
 | Método | Endpoint      | Descrição                                                           |
 | ------ | ------------- | ------------------------------------------------------------------- |
@@ -57,7 +57,7 @@ http://localhost:8080/h2-console
 | GET    | `/info`       | Retorna informações da aplicação, versão, desenvolvedor e framework |
 | GET    | `/h2-console` | Acessa o console do banco de dados H2                               |
 
-**Código do HealthController.java**
+## 💻 Código do HealthController.java
 
 package com.example.deliveryapi.controller;
 
@@ -101,7 +101,7 @@ public class HealthController {
 }
 
 
-**Configuração**
+## 🔧 Configuração
 
 Porta: 8080
 Banco: H2 em memória
@@ -109,7 +109,7 @@ Profile: development
 Spring Boot DevTools ativo para hot reload
 Logs configurados para nível DEBUG
 
-**Desenvolvedor**
+## 👨‍💻 Desenvolvedor
 
 Thiago Zampieri
 Curso: Análise e Desenvolvimento de Sistemas - Universidade São Judas Tadeu
