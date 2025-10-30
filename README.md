@@ -32,12 +32,12 @@
    - Maven configurado (ou usar wrapper `mvnw` incluso)
 
 2. **Clonar o repositório:**
-```bash
+
 git clone https://github.com/Zampi2407/delivery-api-thiagoZP.git
-cd delivery-api-thiago
+cd delivery-api-thiagoZP
 
 
-*Executar a aplicação:*
+**Executar a aplicação:**
 
 ./mvnw spring-boot:run
 
@@ -57,7 +57,7 @@ http://localhost:8080/h2-console
 | GET    | `/info`       | Retorna informações da aplicação, versão, desenvolvedor e framework |
 | GET    | `/h2-console` | Acessa o console do banco de dados H2                               |
 
-*Código do HealthController.java*
+**Código do HealthController.java**
 
 package com.example.deliveryapi.controller;
 
@@ -101,14 +101,15 @@ public class HealthController {
 }
 
 
-*Recursos Modernos Utilizados*
+**Configuração**
 
-✅ Records (Java 14+)
-✅ Text Blocks (Java 15+)
-✅ Pattern Matching (Java 17+)
-✅ Virtual Threads (Java 21)
+Porta: 8080
+Banco: H2 em memória
+Profile: development
+Spring Boot DevTools ativo para hot reload
+Logs configurados para nível DEBUG
 
-*Desenvolvedor*
+**Desenvolvedor**
 
 Thiago Zampieri
 Curso: Análise e Desenvolvimento de Sistemas - Universidade São Judas Tadeu
