@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.ProdutoDTO;
+import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 
@@ -25,12 +26,16 @@ public class ProdutoService {
      * Cadastrar novo produto
      */
     public Produto cadastrar(Produto produto) {
+    Long restauranteId = produto.getRestaurante().getId();
 
-        produto.setRestauranteId(produto.getRestauranteId());
-        produto.setDisponivel(produto.getDisponivel());
+    Restaurante restaurante = restauranteRepository.findById(restauranteId)
+        .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + restauranteId));
 
-        return produtoRepository.save(produto);
-    }
+    produto.setRestaurante(restaurante);
+    produto.setDisponivel(true); // ou produto.getDisponivel() se vier do front
+
+    return produtoRepository.save(produto);
+}
     /**
      * Listar todos os produtos
      */

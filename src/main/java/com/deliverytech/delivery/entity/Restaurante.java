@@ -34,6 +34,9 @@ public class Restaurante {
 
     private Boolean ativo;
 
+    @OneToMany(mappedBy = "restaurante", cascade = CascadeType.ALL)
+    private List<Produto> produtos;
+
     public void inativar() {
         this.ativo = false;
     }

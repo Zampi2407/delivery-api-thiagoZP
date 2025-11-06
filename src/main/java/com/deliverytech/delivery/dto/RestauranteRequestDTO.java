@@ -1,5 +1,5 @@
 package com.deliverytech.delivery.dto;
 
-public class RestauranteRequstDTO {
+public class RestauranteRequestDTO {
     
 }

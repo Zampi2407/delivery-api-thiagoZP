@@ -1,7 +1,6 @@
 package com.deliverytech.delivery.entity;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "produtos")
 public class Produto {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,6 +28,8 @@ public class Produto {
 
     private Boolean disponivel;
 
-    private Long restauranteId;
-
+    @ManyToOne
+    @JoinColumn(name = "restaurante_id")
+    private Restaurante restaurante;
+    
 }

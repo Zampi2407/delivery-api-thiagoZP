@@ -1,14 +1,18 @@
 package com.deliverytech.delivery.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.deliverytech.delivery.entity.PedidoDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Pedido;
+import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.enums.StatusPedido;
 import com.deliverytech.delivery.repository.ClienteRepository;
@@ -18,7 +22,7 @@ import com.deliverytech.delivery.repository.RestauranteRepository;
 
 @Service
 public class PedidoService {
-    
+
     @Autowired
     private PedidoRepository pedidoRepository;
 
@@ -48,16 +52,32 @@ public class PedidoService {
         if (!restaurante.getAtivo()) {
             throw new IllegalArgumentException("Restaurante não está disponível");
         }
+ObjectMapper mapper = new ObjectMapper();
+List<Long> itemIds;
 
-        Pedido pedido = new Pedido();
-        pedido.setClienteId(cliente.getId());
-        pedido.setRestaurante(restaurante);
-        pedido.setStatus(StatusPedido.PENDENTE.name());
-        pedido.setDataPedido(dto.getDataPedido());
-        pedido.setNumeroPedido(dto.getNumeroPedido());
-        pedido.setValorTotal(dto.getValorTotal());
-        pedido.setObservacoes(dto.getObservacoes());
-        pedido.setItens(dto.getItens());
+try {
+    itemIds = mapper.readValue(dto.getItens(), new TypeReference<List<Long>>() {});
+} catch (Exception e) {
+    throw new IllegalArgumentException("Formato inválido para itens: " + dto.getItens());
+}
+
+List<Produto> produtos = itemIds.stream()
+    .map(id -> produtoRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id)))
+    .toList();
+
+
+Pedido pedido = new Pedido();
+
+pedido.setCliente(cliente);
+pedido.setRestaurante(restaurante);
+pedido.setStatus(StatusPedido.PENDENTE);
+pedido.setDataPedido(dto.getDataPedido());
+pedido.setNumeroPedido(dto.getNumeroPedido());
+pedido.setValorTotal(dto.getValorTotal());
+pedido.setObservacoes(dto.getObservacoes());
+pedido.setItens(produtos);
+
 
         return pedidoRepository.save(pedido);
     }
@@ -77,12 +97,11 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
             .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + pedidoId));
 
-        if (pedido.getStatus().equals(StatusPedido.ENTREGUE.name())) {
+        if (pedido.getStatus() == StatusPedido.ENTREGUE) {
             throw new IllegalArgumentException("Pedido já finalizado: " + pedidoId);
         }
 
-        pedido.setStatus(status.name());
+        pedido.setStatus(status);
         return pedidoRepository.save(pedido);
     }
-    
 }

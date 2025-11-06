@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "clientes")
 public class Cliente {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -41,4 +41,13 @@ public class Cliente {
         this.ativo = false;
     }
 
+    // Construtor personalizado para facilitar testes
+    public Cliente(String nome, String email, String telefone, String endereco, Boolean ativo) {
+        this.nome = nome;
+        this.email = email;
+        this.telefone = telefone;
+        this.endereco = endereco;
+        this.ativo = ativo;
+        this.dataCadastro = LocalDateTime.now();
+    }
 }
