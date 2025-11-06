@@ -103,11 +103,11 @@ public class HealthController {
 
 ## 🔧 Configuração
 
-**Porta: 8080**
-**Banco: H2 em memória**
-**Profile: development**
-**Spring Boot DevTools ativo para hot reload**
-**Logs configurados para nível DEBUG**
+**Porta: 8080,**
+**Banco: H2 em memória,**
+**Profile: development,**
+**Spring Boot DevTools ativo para hot reload,**
+**Logs configurados para nível DEBUG.**
 
 ## 👨‍💻 Desenvolvedor
 
