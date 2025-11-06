@@ -1,72 +1,88 @@
-# 🚀 Delivery Tech API
+## 🚀 Delivery Tech API
+Sistema de delivery backend desenvolvido com Spring Boot 3.2.x e Java 21 LTS, utilizando banco H2 em memória, ideal para aprendizado, testes e demonstrações. O projeto cobre desde o cadastro de clientes, restaurantes e produtos até pedidos, relatórios e validações completas.
 
-> Sistema de delivery backend desenvolvido com **Spring Boot 3.2.x** e **Java 21 LTS**, utilizando H2 Database em memória e recursos modernos do JDK 21, ideal para aprendizado, testes e demonstrações.
-
----
-
-## 🧩 Tecnologias
-
-- ☕ **Java 21 LTS**  
-- 🌱 **Spring Boot 3.2.x**  
-- 🕸️ **Spring Web**  
-- 🗄️ **Spring Data JPA**  
-- 🧠 **H2 Database**  
-- 🧩 **Maven**  
-- ♻️ **Spring Boot DevTools** (hot reload)
-
----
+## 🧩 Tecnologias Utilizadas
+- ☕ Java 21 LTS
+- 🌱 Spring Boot 3.2.x
+- 🕸️ Spring Web
+- 🗄️ Spring Data JPA
+- 🧠 H2 Database (em memória)
+- 🧩 Maven
+- ♻️ Spring Boot DevTools (hot reload)
+- 🔍 Lombok
+- 🧪 Jackson (JSON parsing)
+- 🧠 JPA Projections e DTOs
 
 ## ⚡ Recursos Modernos do Java 21
-
-- ✅ **Records** (Java 14+)  
-- ✅ **Text Blocks** (Java 15+)  
-- ✅ **Pattern Matching** (Java 17+)  
-- ✅ **Virtual Threads** (Java 21)
-
----
+- ✅ Records (AppInfo)
+- ✅ Text Blocks
+- ✅ Pattern Matching
+- ✅ Virtual Threads (pronto para uso em produção)
 
 ## 🏃‍♂️ Como Executar
+Pré-requisitos
+- JDK 21 instalado
+- Maven configurado (ou usar wrapper mvnw incluso)
 
-1. **Pré-requisitos:**  
-   - JDK 21 instalado  
-   - Maven configurado (ou usar wrapper `mvnw` incluso)
-
-2. **Clonar o repositório:**
-
+Clonar o repositório
 git clone https://github.com/Zampi2407/delivery-api-thiagoZP.git
 cd delivery-api-thiagoZP
 
 
-### Executar a aplicação:
-
+Executar a aplicação
 ./mvnw spring-boot:run
 
-(Windows: .\mvnw.cmd spring-boot:run)
 
-Acessar no navegador:
+Windows:
 
-http://localhost:8080/health
-http://localhost:8080/info
-http://localhost:8080/h2-console
+.\mvnw.cmd spring-boot:run
 
-### Endpoints Disponíveis
 
-| Método | Endpoint      | Descrição                                                           |
-| ------ | ------------- | ------------------------------------------------------------------- |
-| GET    | `/health`     | Retorna o status da aplicação, timestamp e versão do Java           |
-| GET    | `/info`       | Retorna informações da aplicação, versão, desenvolvedor e framework |
-| GET    | `/h2-console` | Acessa o console do banco de dados H2                               |
 
-## 💻 Código do HealthController.java
+## 🌐 Acessar no navegador
+- http://localhost:8080/health
+- http://localhost:8080/info
+- http://localhost:8080/h2-console
 
-package com.example.deliveryapi.controller;
+## 📦 Endpoints Disponíveis
+|  |  |  | 
+|  | /health |  | 
+|  | /info |  | 
+|  | /h2-console |  | 
+|  | /clientes |  | 
+|  | /clientes |  | 
+|  | /restaurantes |  | 
+|  | /restaurantes |  | 
+|  | /produtos |  | 
+|  | /produtos |  | 
+|  | /produtos/restaurante/{id} |  | 
+|  | /pedidos |  | 
+|  | /pedidos/cliente/{id} |  | 
+|  | /pedidos/{id}/{status} |  | 
+|  | /pedidos/relatorio-vendas |  | 
+|  | /pedidos/acima-de/{valor} |  | 
+|  | /pedidos/por-periodo-e-status |  | 
+|  | /pedidos/resumo-por-periodo |  | 
+|  | /pedidos/produtos-mais-vendidos |  | 
+|  | /pedidos/ranking-clientes |  | 
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.Map;
 
+## 🧪 Validações Implementadas
+- Cliente e restaurante devem estar ativos para criar pedidos
+- Produto deve ter nome, descrição, preço > 0 e categoria
+- Pedido não pode ser atualizado se já estiver entregue
+- Conversão segura de String para List<Long> usando Jackson
+- Relacionamentos JPA validados com integridade referencial
+
+## 🛠️ Configuração
+- Porta: 8080
+- Banco: H2 em memória
+- Profile: development
+- DevTools: ativo para hot reload
+- Logs: configurados para nível DEBUG com SQL e parâmetros visíveis
+
+## 💻 HealthController.java
 @RestController
 public class HealthController {
 
@@ -101,16 +117,12 @@ public class HealthController {
 }
 
 
-## 🔧 Configuração
-
-**Porta: 8080,**
-**Banco: H2 em memória,**
-**Profile: development,**
-**Spring Boot DevTools ativo para hot reload,**
-**Logs configurados para nível DEBUG.**
 
 ## 👨‍💻 Desenvolvedor
+Thiago Zampieri
+Curso: Análise e Desenvolvimento de Sistemas
+Universidade São Judas Tadeu
+Desenvolvido com JDK 21 e Spring Boot 3.2.x
 
-**Thiago Zampieri**
-Curso: Análise e Desenvolvimento de Sistemas - Universidade São Judas Tadeu
-Desenvolvido com **JDK** 21 e Spring Boot 3.2.x
+
+
