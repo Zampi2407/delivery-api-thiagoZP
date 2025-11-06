@@ -113,4 +113,4 @@ public class HealthController {
 
 **Thiago Zampieri**
 Curso: Análise e Desenvolvimento de Sistemas - Universidade São Judas Tadeu
-Desenvolvido com *JDK 21* e Spring Boot 3.2.x
+Desenvolvido com **JDK** 21 e Spring Boot 3.2.x
