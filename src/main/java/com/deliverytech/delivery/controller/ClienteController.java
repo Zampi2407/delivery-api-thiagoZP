@@ -75,18 +75,18 @@ public class ClienteController {
      * Atualizar cliente
      */
     @PutMapping("/{id}")
-    public ResponseEntity<?> atualizar(@PathVariable Long id,
-                                      @Validated @RequestBody Cliente cliente) {
-        try {
-            Cliente clienteAtualizado = clienteService.atualizar(id, cliente);
-            return ResponseEntity.ok(clienteAtualizado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Erro interno do servidor");
-        }
+public ResponseEntity<?> atualizar(@PathVariable Long id,
+                                   @Valid @RequestBody ClienteResquetDTO dto) {
+    try {
+        Cliente clienteAtualizado = clienteService.atualizar(id, dto);
+        return ResponseEntity.ok(clienteAtualizado);
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body("Erro interno do servidor");
     }
+}
 
     /**
      * Inativar cliente (soft delete)

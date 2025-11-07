@@ -18,14 +18,15 @@ import com.deliverytech.delivery.repository.ClienteRepository;
 @Transactional
 public class ClienteService {
 
-     @Autowired
+    @Autowired
     private ClienteRepository clienteRepository;
 
     /**
      * Cadastrar novo cliente
      */
     public ClienteResponseDTO cadastrar(ClienteResquetDTO dto) {
-        // Validar email único
+        validarDadosCliente(dto);
+
         if (clienteRepository.existsByEmail(dto.getEmail())) {
             throw new BusinessException("Email já cadastrado: " + dto.getEmail());
         }
@@ -35,10 +36,8 @@ public class ClienteService {
         cliente.setEmail(dto.getEmail());
         cliente.setTelefone(dto.getTelefone());
         cliente.setEndereco(dto.getEndereco());
-        // Definir como ativo por padrão
         cliente.setAtivo(true);
         cliente.setDataCadastro(LocalDateTime.now());
-
 
         return new ClienteResponseDTO(clienteRepository.save(cliente));
     }
@@ -70,22 +69,33 @@ public class ClienteService {
     /**
      * Atualizar dados do cliente
      */
-    public Cliente atualizar(Long id, Cliente clienteAtualizado) {
-        Cliente cliente = buscarPorId(id)
-            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
+    public Cliente atualizar(Long id, ClienteResquetDTO dto) {
+        validarDadosCliente(dto);
 
-        // Verificar se email não está sendo usado por outro cliente
-        if (!cliente.getEmail().equals(clienteAtualizado.getEmail()) &&
-            clienteRepository.existsByEmail(clienteAtualizado.getEmail())) {
-            throw new IllegalArgumentException("Email já cadastrado: " + clienteAtualizado.getEmail());
+        Cliente cliente = buscarPorId(id)
+            .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id));
+
+        if (!cliente.getEmail().equals(dto.getEmail()) &&
+            clienteRepository.existsByEmail(dto.getEmail())) {
+            throw new BusinessException("Email já cadastrado: " + dto.getEmail());
         }
 
-        // Atualizar campos
-        cliente.setNome(clienteAtualizado.getNome());
-        cliente.setEmail(clienteAtualizado.getEmail());
-        cliente.setTelefone(clienteAtualizado.getTelefone());
-        cliente.setEndereco(clienteAtualizado.getEndereco());
+        cliente.setNome(dto.getNome());
+        cliente.setEmail(dto.getEmail());
+        cliente.setTelefone(dto.getTelefone());
+        cliente.setEndereco(dto.getEndereco());
 
+        return clienteRepository.save(cliente);
+    }
+
+    /**
+     * Alternar status ativo/inativo
+     */
+    public Cliente ativarDesativar(Long id) {
+        Cliente cliente = buscarPorId(id)
+            .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id));
+
+        cliente.setAtivo(!cliente.getAtivo());
         return clienteRepository.save(cliente);
     }
 
@@ -94,9 +104,9 @@ public class ClienteService {
      */
     public void inativar(Long id) {
         Cliente cliente = buscarPorId(id)
-            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado: " + id));
+            .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id));
 
-        cliente.inativar();
+        cliente.setAtivo(false);
         clienteRepository.save(cliente);
     }
 
@@ -111,18 +121,17 @@ public class ClienteService {
     /**
      * Validações de negócio
      */
-//    private void validarDadosCliente(ClienteResquetDTO cliente) {
-//        if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
-//            throw new IllegalArgumentException("Nome é obrigatório");
-//        }
-//
-//        if (cliente.getEmail() == null || cliente.getEmail().trim().isEmpty()) {
-//            throw new IllegalArgumentException("Email é obrigatório");
-//        }
-//
-//        if (cliente.getNome().length() < 2) {
-//            throw new IllegalArgumentException("Nome deve ter pelo menos 2 caracteres");
-//        }
-//    }
-    
+    private void validarDadosCliente(ClienteResquetDTO cliente) {
+        if (cliente.getNome() == null || cliente.getNome().trim().isEmpty()) {
+            throw new BusinessException("Nome é obrigatório");
+        }
+
+        if (cliente.getEmail() == null || cliente.getEmail().trim().isEmpty()) {
+            throw new BusinessException("Email é obrigatório");
+        }
+
+        if (cliente.getNome().length() < 2) {
+            throw new BusinessException("Nome deve ter pelo menos 2 caracteres");
+        }
+    }
 }
