@@ -39,20 +39,20 @@ public class ProdutoController {
      * Listar todos os produtos
      */
     @GetMapping
-public ResponseEntity<?> listarTodos() {
-    try {
-        List<ProdutoDTO> produtos = produtoService.listarTodos();
-        if (produtos.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<?> listarTodos() {
+        try {
+            List<ProdutoDTO> produtos = produtoService.listarTodos();
+            if (produtos.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.ok(produtos);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno do servidor");
         }
-        return ResponseEntity.ok(produtos);
-    } catch (BusinessException e) {
-        return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Erro interno do servidor");
     }
-}
 
     /**
      * Buscar produto por ID (com validação de disponibilidade)
@@ -90,17 +90,17 @@ public ResponseEntity<?> listarTodos() {
      * Excluir produto
      */
     @DeleteMapping("/{id}")
-public ResponseEntity<?> excluir(@PathVariable Long id) {
-    try {
-        produtoService.excluir(id);
-        return ResponseEntity.ok("Produto excluído com sucesso");
-    } catch (BusinessException e) {
-        return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
-    } catch (Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Erro interno do servidor");
+    public ResponseEntity<?> excluir(@PathVariable Long id) {
+        try {
+            produtoService.excluir(id);
+            return ResponseEntity.ok("Produto excluído com sucesso");
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno do servidor");
+        }
     }
-}
 
     /**
      * Inativar produto
@@ -110,6 +110,22 @@ public ResponseEntity<?> excluir(@PathVariable Long id) {
         try {
             var produtoInativado = produtoService.alterarDisponibilidade(id, false);
             return ResponseEntity.ok(produtoInativado);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno do servidor");
+        }
+    }
+
+    /**
+     * Alterar disponibilidade (PATCH)
+     */
+    @PatchMapping("/{id}/disponibilidade")
+    public ResponseEntity<?> alterarDisponibilidade(@PathVariable Long id, @RequestParam boolean disponivel) {
+        try {
+            var produtoAtualizado = produtoService.alterarDisponibilidade(id, disponivel);
+            return ResponseEntity.ok(produtoAtualizado);
         } catch (BusinessException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {

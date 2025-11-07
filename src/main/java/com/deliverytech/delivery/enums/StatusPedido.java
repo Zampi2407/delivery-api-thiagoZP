@@ -17,4 +17,14 @@ public enum StatusPedido {
     public String getDescricao() {
         return descricao;
     }
+
+    public boolean podeTransitarPara(StatusPedido novoStatus) {
+        return switch (this) {
+            case PENDENTE -> novoStatus == CONFIRMADO || novoStatus == CANCELADO;
+            case CONFIRMADO -> novoStatus == PREPARANDO || novoStatus == CANCELADO;
+            case PREPARANDO -> novoStatus == SAIU_PARA_ENTREGA || novoStatus == CANCELADO;
+            case SAIU_PARA_ENTREGA -> novoStatus == ENTREGUE;
+            case ENTREGUE, CANCELADO -> false;
+        };
+    }
 }

@@ -2,7 +2,6 @@ package com.deliverytech.delivery.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import com.deliverytech.delivery.dto.ClienteResponseDTO;
 import com.deliverytech.delivery.dto.ClienteResquetDTO;
@@ -46,33 +45,39 @@ public class ClienteService {
      * Buscar cliente por ID
      */
     @Transactional(readOnly = true)
-    public Optional<Cliente> buscarPorId(Long id) {
-        return clienteRepository.findById(id);
+    public ClienteResponseDTO buscarPorId(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+            .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id));
+        return new ClienteResponseDTO(cliente);
     }
 
     /**
      * Buscar cliente por email
      */
     @Transactional(readOnly = true)
-    public Optional<Cliente> buscarPorEmail(String email) {
-        return clienteRepository.findByEmail(email);
+    public ClienteResponseDTO buscarPorEmail(String email) {
+        Cliente cliente = clienteRepository.findByEmail(email)
+            .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + email));
+        return new ClienteResponseDTO(cliente);
     }
 
     /**
      * Listar todos os clientes ativos
      */
     @Transactional(readOnly = true)
-    public List<Cliente> listarAtivos() {
-        return clienteRepository.findByAtivoTrue();
+    public List<ClienteResponseDTO> listarAtivos() {
+        return clienteRepository.findByAtivoTrue().stream()
+            .map(ClienteResponseDTO::new)
+            .toList();
     }
 
     /**
      * Atualizar dados do cliente
      */
-    public Cliente atualizar(Long id, ClienteResquetDTO dto) {
+    public ClienteResponseDTO atualizar(Long id, ClienteResquetDTO dto) {
         validarDadosCliente(dto);
 
-        Cliente cliente = buscarPorId(id)
+        Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id));
 
         if (!cliente.getEmail().equals(dto.getEmail()) &&
@@ -85,25 +90,25 @@ public class ClienteService {
         cliente.setTelefone(dto.getTelefone());
         cliente.setEndereco(dto.getEndereco());
 
-        return clienteRepository.save(cliente);
+        return new ClienteResponseDTO(clienteRepository.save(cliente));
     }
 
     /**
-     * Alternar status ativo/inativo
+     * Alterar status ativo/inativo
      */
-    public Cliente ativarDesativar(Long id) {
-        Cliente cliente = buscarPorId(id)
+    public ClienteResponseDTO alterarStatus(Long id, boolean ativo) {
+        Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id));
 
-        cliente.setAtivo(!cliente.getAtivo());
-        return clienteRepository.save(cliente);
+        cliente.setAtivo(ativo);
+        return new ClienteResponseDTO(clienteRepository.save(cliente));
     }
 
     /**
      * Inativar cliente (soft delete)
      */
     public void inativar(Long id) {
-        Cliente cliente = buscarPorId(id)
+        Cliente cliente = clienteRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Cliente não encontrado: " + id));
 
         cliente.setAtivo(false);
@@ -114,8 +119,10 @@ public class ClienteService {
      * Buscar clientes por nome
      */
     @Transactional(readOnly = true)
-    public List<Cliente> buscarPorNome(String nome) {
-        return clienteRepository.findByNomeContainingIgnoreCase(nome);
+    public List<ClienteResponseDTO> buscarPorNome(String nome) {
+        return clienteRepository.findByNomeContainingIgnoreCase(nome).stream()
+            .map(ClienteResponseDTO::new)
+            .toList();
     }
 
     /**

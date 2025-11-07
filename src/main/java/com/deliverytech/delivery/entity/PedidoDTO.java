@@ -19,6 +19,6 @@ public class PedidoDTO {
     private String observacoes;
     private Long clienteId;
     private Long restauranteId;
-    private String itens; // JSON ou string representando os itens do pedido
+    private String itens; 
 
 }

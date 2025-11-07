@@ -26,7 +26,7 @@ public class ProdutoService {
     /**
      * Cadastrar novo produto com validação de restaurante
      */
-    public Produto cadastrarProduto(ProdutoDTO dto) {
+    public ProdutoDTO cadastrarProduto(ProdutoDTO dto) {
         Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
             .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId()));
 
@@ -40,45 +40,41 @@ public class ProdutoService {
         produto.setDisponivel(true);
         produto.setRestaurante(restaurante);
 
-        return produtoRepository.save(produto);
+        Produto salvo = produtoRepository.save(produto);
+        return toDTO(salvo);
     }
 
     /**
- * Listar todos os produtos
- */
-public List<ProdutoDTO> listarTodos() {
-    List<Produto> produtos = produtoRepository.findAll();
-    return produtos.stream()
-        .map(p -> new ProdutoDTO(
-            p.getId(), p.getNome(), p.getDescricao(), p.getPreco(),
-            p.getCategoria(), p.getDisponivel(), p.getRestaurante().getId()))
-        .toList();
-}
+     * Listar todos os produtos
+     */
+    public List<ProdutoDTO> listarTodos() {
+        return produtoRepository.findAll().stream()
+            .map(this::toDTO)
+            .toList();
+    }
+
     /**
      * Buscar produtos disponíveis por restaurante
      */
     public List<ProdutoDTO> buscarProdutosPorRestaurante(Long restauranteId) {
-        List<Produto> produtos = produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId);
-        return produtos.stream()
-            .map(p -> new ProdutoDTO(
-                p.getId(), p.getNome(), p.getDescricao(), p.getPreco(),
-                p.getCategoria(), p.getDisponivel(), p.getRestaurante().getId()))
+        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId).stream()
+            .map(this::toDTO)
             .toList();
     }
 
-/**
- * Excluir produto
- */
-public void excluir(Long id) {
-    Produto produto = produtoRepository.findById(id)
-        .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id));
-    produtoRepository.delete(produto);
-}
+    /**
+     * Excluir produto
+     */
+    public void excluir(Long id) {
+        Produto produto = produtoRepository.findById(id)
+            .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id));
+        produtoRepository.delete(produto);
+    }
 
     /**
      * Buscar produto por ID com validação de disponibilidade
      */
-    public Produto buscarProdutoPorId(Long id) {
+    public ProdutoDTO buscarProdutoPorId(Long id) {
         Produto produto = produtoRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id));
 
@@ -86,14 +82,14 @@ public void excluir(Long id) {
             throw new BusinessException("Produto está inativo: " + id);
         }
 
-        return produto;
+        return toDTO(produto);
     }
 
     /**
      * Atualizar produto com validações
      */
     @Transactional
-    public Produto atualizarProduto(Long id, ProdutoDTO dto) {
+    public ProdutoDTO atualizarProduto(Long id, ProdutoDTO dto) {
         Produto produto = produtoRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id));
 
@@ -105,36 +101,35 @@ public void excluir(Long id) {
         produto.setCategoria(dto.getCategoria());
         produto.setDisponivel(dto.getDisponivel());
 
-        // Atualizar restaurante se necessário
         if (dto.getRestauranteId() != null && !dto.getRestauranteId().equals(produto.getRestaurante().getId())) {
             Restaurante restaurante = restauranteRepository.findById(dto.getRestauranteId())
                 .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + dto.getRestauranteId()));
             produto.setRestaurante(restaurante);
         }
 
-        return produtoRepository.save(produto);
+        Produto atualizado = produtoRepository.save(produto);
+        return toDTO(atualizado);
     }
 
     /**
      * Alterar disponibilidade do produto
      */
-    public Produto alterarDisponibilidade(Long id, boolean disponivel) {
+    public ProdutoDTO alterarDisponibilidade(Long id, boolean disponivel) {
         Produto produto = produtoRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Produto não encontrado: " + id));
 
         produto.setDisponivel(disponivel);
-        return produtoRepository.save(produto);
+        Produto atualizado = produtoRepository.save(produto);
+
+        return toDTO(atualizado);
     }
 
     /**
      * Buscar produtos por categoria
      */
     public List<ProdutoDTO> buscarPorCategoria(String categoria) {
-        List<Produto> produtos = produtoRepository.findByCategoriaIgnoreCase(categoria);
-        return produtos.stream()
-            .map(p -> new ProdutoDTO(
-                p.getId(), p.getNome(), p.getDescricao(), p.getPreco(),
-                p.getCategoria(), p.getDisponivel(), p.getRestaurante().getId()))
+        return produtoRepository.findByCategoriaIgnoreCase(categoria).stream()
+            .map(this::toDTO)
             .toList();
     }
 
@@ -154,5 +149,20 @@ public void excluir(Long id) {
         if (dto.getCategoria() == null || dto.getCategoria().isBlank()) {
             throw new BusinessException("Categoria é obrigatória");
         }
+    }
+
+    /**
+     * Conversão para DTO
+     */
+    private ProdutoDTO toDTO(Produto produto) {
+        return new ProdutoDTO(
+            produto.getId(),
+            produto.getNome(),
+            produto.getDescricao(),
+            produto.getPreco(),
+            produto.getCategoria(),
+            produto.getDisponivel(),
+            produto.getRestaurante().getId()
+        );
     }
 }

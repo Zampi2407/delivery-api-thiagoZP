@@ -5,12 +5,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.transaction.TransactionSystemException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ValidationErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
         ValidationErrorResponse error = new ValidationErrorResponse(
@@ -34,9 +38,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationException(
-            MethodArgumentNotValidException ex) {
-
+    public ResponseEntity<ValidationErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
             String fieldName = ((FieldError) error).getField();
@@ -47,11 +49,22 @@ public class GlobalExceptionHandler {
         ValidationErrorResponse errorResponse = new ValidationErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Dados inválidos",
-                errors.toString(),
+                errors,
                 LocalDateTime.now()
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(TransactionSystemException.class)
+    public ResponseEntity<ValidationErrorResponse> handleTransactionException(TransactionSystemException ex) {
+        ValidationErrorResponse error = new ValidationErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Erro transacional",
+                "Falha ao concluir a transação. Tente novamente.",
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 
     @ExceptionHandler(Exception.class)

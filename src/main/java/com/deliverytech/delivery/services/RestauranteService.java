@@ -2,10 +2,10 @@ package com.deliverytech.delivery.services;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
+import com.deliverytech.delivery.dto.RestauranteRequestDTO;
+import com.deliverytech.delivery.dto.RestauranteResponseDTO;
 import com.deliverytech.delivery.entity.Restaurante;
-import com.deliverytech.delivery.entity.RestauranteDTO;
 import com.deliverytech.delivery.exceptions.BusinessException;
 import com.deliverytech.delivery.repository.PedidoRepository;
 import com.deliverytech.delivery.repository.ProdutoRepository;
@@ -29,57 +29,40 @@ public class RestauranteService {
     /**
      * Cadastrar novo restaurante
      */
-    public Restaurante cadastrar(Restaurante restaurante) {
-        if (restauranteRepository.findByNome(restaurante.getNome()).isPresent()) {
-            throw new BusinessException("Restaurante já cadastrado: " + restaurante.getNome());
+    public RestauranteResponseDTO cadastrar(RestauranteRequestDTO dto) {
+        if (restauranteRepository.findByNome(dto.getNome()).isPresent()) {
+            throw new BusinessException("Restaurante já cadastrado: " + dto.getNome());
         }
 
-        validarDadosRestaurante(restaurante);
+        validarDadosRestaurante(dto);
+
+        Restaurante restaurante = new Restaurante();
+        restaurante.setNome(dto.getNome());
+        restaurante.setCategoria(dto.getCategoria());
+        restaurante.setEndereco(dto.getEndereco());
+        restaurante.setTaxaEntrega(dto.getTaxaEntrega());
         restaurante.setAtivo(true);
 
-        return restauranteRepository.save(restaurante);
+        return new RestauranteResponseDTO(restauranteRepository.save(restaurante));
     }
 
     /**
-     * Buscar por ID (entidade)
+     * Buscar por ID
      */
     @Transactional(readOnly = true)
-    public Optional<Restaurante> buscarPorId(Long id) {
-        return restauranteRepository.findById(id);
-    }
-
-    /**
-     * Buscar por ID (DTO)
-     */
-    @Transactional(readOnly = true)
-    public Optional<RestauranteDTO> findById(Long id) {
-        return restauranteRepository.findById(id)
-            .map(restaurante -> new RestauranteDTO(
-                restaurante.getId(),
-                restaurante.getNome(),
-                restaurante.getCategoria(),
-                restaurante.getEndereco(),
-                restaurante.getTelefone(),
-                restaurante.getTaxaEntrega(),
-                restaurante.getAvaliacao(),
-                restaurante.getAtivo()
-            ));
+    public RestauranteResponseDTO buscarPorId(Long id) {
+        Restaurante restaurante = restauranteRepository.findById(id)
+            .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id));
+        return new RestauranteResponseDTO(restaurante);
     }
 
     /**
      * Listar restaurantes ativos
      */
     @Transactional(readOnly = true)
-    public List<RestauranteDTO> listarAtivos() {
-        List<Restaurante> ativos = restauranteRepository.findByAtivoTrue();
-        if (ativos.isEmpty()) {
-            throw new BusinessException("Nenhum restaurante ativo encontrado");
-        }
-
-        return ativos.stream()
-            .map(r -> new RestauranteDTO(
-                r.getId(), r.getNome(), r.getCategoria(), r.getEndereco(),
-                r.getTelefone(), r.getTaxaEntrega(), r.getAvaliacao(), r.getAtivo()))
+    public List<RestauranteResponseDTO> listarDisponiveis() {
+        return restauranteRepository.findByAtivoTrue().stream()
+            .map(RestauranteResponseDTO::new)
             .toList();
     }
 
@@ -87,45 +70,39 @@ public class RestauranteService {
      * Buscar por categoria
      */
     @Transactional(readOnly = true)
-    public List<RestauranteDTO> buscarPorCategoria(String categoria) {
-        List<Restaurante> encontrados = restauranteRepository.findByCategoria(categoria);
-        if (encontrados.isEmpty()) {
-            throw new BusinessException("Nenhum restaurante encontrado para a categoria: " + categoria);
-        }
-
-        return encontrados.stream()
-            .map(r -> new RestauranteDTO(
-                r.getId(), r.getNome(), r.getCategoria(), r.getEndereco(),
-                r.getTelefone(), r.getTaxaEntrega(), r.getAvaliacao(), r.getAtivo()))
+    public List<RestauranteResponseDTO> buscarPorCategoria(String categoria) {
+        return restauranteRepository.findByCategoria(categoria).stream()
+            .map(RestauranteResponseDTO::new)
             .toList();
     }
 
     /**
      * Atualizar restaurante
      */
-    public Restaurante atualizar(Long id, Restaurante restauranteAtualizado) {
-        Restaurante restaurante = buscarPorId(id)
+    public RestauranteResponseDTO atualizar(Long id, RestauranteRequestDTO dto) {
+        Restaurante restaurante = restauranteRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id));
 
-        if (!restaurante.getNome().equals(restauranteAtualizado.getNome()) &&
-            restauranteRepository.findByNome(restauranteAtualizado.getNome()).isPresent()) {
-            throw new BusinessException("Nome já cadastrado: " + restauranteAtualizado.getNome());
+        if (!restaurante.getNome().equals(dto.getNome()) &&
+            restauranteRepository.findByNome(dto.getNome()).isPresent()) {
+            throw new BusinessException("Nome já cadastrado: " + dto.getNome());
         }
 
-        restaurante.setNome(restauranteAtualizado.getNome());
-        restaurante.setCategoria(restauranteAtualizado.getCategoria());
-        restaurante.setEndereco(restauranteAtualizado.getEndereco());
-        restaurante.setTelefone(restauranteAtualizado.getTelefone());
-        restaurante.setTaxaEntrega(restauranteAtualizado.getTaxaEntrega());
+        validarDadosRestaurante(dto);
 
-        return restauranteRepository.save(restaurante);
+        restaurante.setNome(dto.getNome());
+        restaurante.setCategoria(dto.getCategoria());
+        restaurante.setEndereco(dto.getEndereco());
+        restaurante.setTaxaEntrega(dto.getTaxaEntrega());
+
+        return new RestauranteResponseDTO(restauranteRepository.save(restaurante));
     }
 
     /**
      * Inativar restaurante
      */
     public void inativar(Long id) {
-        Restaurante restaurante = buscarPorId(id)
+        Restaurante restaurante = restauranteRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id));
 
         restaurante.setAtivo(false);
@@ -136,7 +113,7 @@ public class RestauranteService {
      * Deletar restaurante
      */
     public void deletar(Long id) {
-        Restaurante restaurante = buscarPorId(id)
+        Restaurante restaurante = restauranteRepository.findById(id)
             .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + id));
 
         restauranteRepository.delete(restaurante);
@@ -146,7 +123,7 @@ public class RestauranteService {
      * Calcular taxa de entrega com base no CEP
      */
     public BigDecimal calcularTaxaEntrega(Long restauranteId, String cep) {
-        Restaurante restaurante = buscarPorId(restauranteId)
+        Restaurante restaurante = restauranteRepository.findById(restauranteId)
             .orElseThrow(() -> new BusinessException("Restaurante não encontrado: " + restauranteId));
 
         BigDecimal taxaBase = restaurante.getTaxaEntrega();
@@ -163,17 +140,17 @@ public class RestauranteService {
     /**
      * Validações de negócio
      */
-    private void validarDadosRestaurante(Restaurante restaurante) {
-        if (restaurante.getNome() == null || restaurante.getNome().trim().isEmpty()) {
+    private void validarDadosRestaurante(RestauranteRequestDTO dto) {
+        if (dto.getNome() == null || dto.getNome().trim().isEmpty()) {
             throw new BusinessException("Nome é obrigatório");
         }
 
-        if (restaurante.getCategoria() == null || restaurante.getCategoria().trim().isEmpty()) {
+        if (dto.getCategoria() == null || dto.getCategoria().trim().isEmpty()) {
             throw new BusinessException("Categoria é obrigatória");
         }
 
-        if (restaurante.getTaxaEntrega() != null &&
-            restaurante.getTaxaEntrega().compareTo(BigDecimal.ZERO) < 0) {
+        if (dto.getTaxaEntrega() != null &&
+            dto.getTaxaEntrega().compareTo(BigDecimal.ZERO) < 0) {
             throw new BusinessException("Taxa de entrega não pode ser negativa");
         }
     }

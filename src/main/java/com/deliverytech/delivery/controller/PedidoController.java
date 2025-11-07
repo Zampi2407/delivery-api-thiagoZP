@@ -18,15 +18,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("/api/pedidos")
 @CrossOrigin(origins = "*")
 public class PedidoController {
 
     @Autowired
     private PedidoService pedidoService;
-
-    @Autowired
-    private PedidoRepository pedidoRepository;
 
     /**
      * Criar novo pedido
@@ -35,14 +32,29 @@ public class PedidoController {
     public ResponseEntity<?> criarPedido(@RequestBody PedidoDTO dto) {
         try {
             Pedido pedido = pedidoService.criarPedido(dto);
-            return ResponseEntity.ok(pedido);
+            return ResponseEntity.status(HttpStatus.CREATED).body(pedido);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno do servidor");
         }
     }
 
     /**
-     * Listar pedidos por cliente
+     * Buscar pedido completo por ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPedidoPorId(@PathVariable Long id) {
+        try {
+            Pedido pedido = pedidoService.buscarPorId(id);
+            return ResponseEntity.ok(pedido);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno do servidor");
+        }
+    }
+
+    /**
+     * Histórico de pedidos por cliente
      */
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<List<Pedido>> listarPorCliente(@PathVariable Long clienteId) {
@@ -53,30 +65,58 @@ public class PedidoController {
     /**
      * Atualizar status do pedido
      */
-    @PutMapping("/{pedidoId}/{status}")
-    public ResponseEntity<?> atualizarStatus(@PathVariable Long pedidoId,
-                                             @PathVariable StatusPedido status) {
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> atualizarStatus(@PathVariable Long id, @RequestParam StatusPedido status) {
         try {
-            Pedido pedido = pedidoService.atualizarStatus(pedidoId, status);
+            Pedido pedido = pedidoService.atualizarStatus(id, status);
             return ResponseEntity.ok(pedido);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno do servidor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno do servidor");
         }
     }
 
-    // 🔹 Consultas customizadas e relatórios
+    /**
+     * Cancelar pedido
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> cancelarPedido(@PathVariable Long id) {
+        try {
+            pedidoService.cancelarPedido(id);
+            return ResponseEntity.ok("Pedido cancelado com sucesso");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno do servidor");
+        }
+    }
+
+    /**
+     * Calcular total do pedido sem salvar
+     */
+    @PostMapping("/calcular")
+    public ResponseEntity<?> calcularTotal(@RequestBody PedidoDTO dto) {
+        try {
+            BigDecimal total = pedidoService.calcularTotal(dto);
+            return ResponseEntity.ok(total);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno do servidor");
+        }
+    }
+
+    // 🔹 Relatórios e consultas customizadas
 
     @GetMapping("/relatorio-vendas")
     public ResponseEntity<List<VendasRestauranteDTO>> relatorioVendas() {
-        return ResponseEntity.ok(pedidoRepository.gerarRelatorioVendas());
+        return ResponseEntity.ok(pedidoService.gerarRelatorioVendas());
     }
 
     @GetMapping("/acima-de/{valor}")
     public ResponseEntity<List<Pedido>> pedidosAcimaDe(@PathVariable BigDecimal valor) {
-        return ResponseEntity.ok(pedidoRepository.pedidosComValorAcima(valor));
+        return ResponseEntity.ok(pedidoService.pedidosComValorAcima(valor));
     }
 
     @GetMapping("/por-periodo-e-status")
@@ -84,23 +124,23 @@ public class PedidoController {
             @RequestParam("inicio") LocalDateTime inicio,
             @RequestParam("fim") LocalDateTime fim,
             @RequestParam("status") StatusPedido status) {
-        return ResponseEntity.ok(pedidoRepository.relatorioPorPeriodoEStatus(inicio, fim, status));
+        return ResponseEntity.ok(pedidoService.relatorioPorPeriodoEStatus(inicio, fim, status));
     }
 
     @GetMapping("/resumo-por-periodo")
     public ResponseEntity<List<PedidoResumoDTO>> resumoPorPeriodo(
             @RequestParam("inicio") LocalDateTime inicio,
             @RequestParam("fim") LocalDateTime fim) {
-        return ResponseEntity.ok(pedidoRepository.buscarPedidosPorPeriodo(inicio, fim));
+        return ResponseEntity.ok(pedidoService.buscarPedidosPorPeriodo(inicio, fim));
     }
 
     @GetMapping("/produtos-mais-vendidos")
     public ResponseEntity<List<Object[]>> produtosMaisVendidos() {
-        return ResponseEntity.ok(pedidoRepository.produtosMaisVendidos());
+        return ResponseEntity.ok(pedidoService.produtosMaisVendidos());
     }
 
     @GetMapping("/ranking-clientes")
     public ResponseEntity<List<Object[]>> rankingClientes() {
-        return ResponseEntity.ok(pedidoRepository.rankingClientesPorPedidos());
+        return ResponseEntity.ok(pedidoService.rankingClientesPorPedidos());
     }
 }

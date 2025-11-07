@@ -37,6 +37,8 @@ public class Cliente {
     @Column(nullable = true)
     private Boolean ativo;
 
+    
+
     public void inativar() {
         this.ativo = false;
     }
